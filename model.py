@@ -11,11 +11,12 @@ model.fit(X, y)
 
 y_pred = model.predict(X)
 
+
 plt.scatter(X, y, color='blue', label='Data Points')
 plt.plot(X, y_pred, color='red', label='Linear Fit')
 plt.legend()
 plt.title('Linear Regression Example')
-plt.savefig('linear_regression.png')
+plt.savefig('model_results.png')
 
 metric = np.mean((y - y_pred) ** 2)
 
