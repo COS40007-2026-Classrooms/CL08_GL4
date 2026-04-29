@@ -2,14 +2,14 @@ name: Train ML Model
 
 on:
   push:
-    branches: [ main ]        # runs every time you push to main
+    branches: [ main ]   # runs every time you push to main
   pull_request:
-    branches: [ main ]        # runs on pull requests to main
-  workflow_dispatch:           # allows manual trigger from GitHub UI
+    branches: [ main ]   # runs on pull requests to main
+  workflow_dispatch:     # allows manual trigger from GitHub UI
 
 jobs:
   train:
-    runs-on: ubuntu-latest    # GitHub-hosted Linux runner (free)
+    runs-on: ubuntu-latest   # GitHub-hosted Linux runner
 
     steps:
       # 1. Check out the repository code
@@ -20,9 +20,9 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12.4'
+          python-version: '3.11'
 
-      # 3. Cache pip packages so repeat runs are faster
+      # 3. Cache pip packages
       - name: Cache pip dependencies
         uses: actions/cache@v4
         with:
@@ -31,34 +31,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      # 4. Install dependencies from requirements.txt
+      # 4. Install dependencies
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # 5. Train the model — runs model.py
+      # 5. Train the model
       - name: Train model
-        run: python model.py #model.py
+        run: python model.py
 
-      # 6. Upload the saved plot and metrics as artefacts
-      #    so you can download them from the GitHub Actions UI
+      # 6. Upload results as artefacts
       - name: Upload results
         uses: actions/upload-artifact@v4
         with:
           name: model-results
           path: |
-            #first one
-            # model_results.png
-            # training_history.png
-            # metrics.txt
             model_results.png
-            predictions_vs_actual.png
-            residuals_analysis.png
             metrics.txt
-            metrics.json
-            model_summary.txt
-            submission_5.csv
-            cnn_regression_model.h5
-            data_info.json
-            summary_report.txt
-          compression-level: 9
-          retention-days: 90
