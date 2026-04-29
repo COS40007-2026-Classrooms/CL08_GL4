@@ -3,27 +3,23 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
 # Generate random data
-X = np.random.rand(100, 1) * 10
-y = 2 * X + 3 + np.random.randn(100, 1)
+X = np.random.rand(100, 1) * 10  # 100 random points between 0 and 10
+y = 2 * X + 3 + np.random.randn(100, 1) * 2  # Linear relation with some noise 
 
-# Train model
 model = LinearRegression()
 model.fit(X, y)
 
-# Predictions
 y_pred = model.predict(X)
 
-# Plot results
-plt.scatter(X, y, label="Actual")
-plt.plot(X, y_pred, label="Predicted")
+plt.scatter(X, y, color='blue', label='Data Points')
+plt.plot(X, y_pred, color='red', label='Linear Fit')
 plt.legend()
-plt.title("Simple Regression Model")
-plt.savefig("model_results.png")
+plt.title('Linear Regression Example')
+plt.savefig('linear_regression.png')
 
-# Save metrics
-mse = np.mean((y - y_pred) ** 2)
+metric = np.mean((y - y_pred) ** 2)
 
-with open("metrics.txt", "w") as f:
-    f.write(f"Mean Squared Error: {mse}\n")
+with open('metrics.txt', 'w') as f:
+    f.write(f'Mean Squared Error: {metric}\n')
 
-print("Training complete. Files saved.")
+print(f'Mean Squared Error: {metric}')
