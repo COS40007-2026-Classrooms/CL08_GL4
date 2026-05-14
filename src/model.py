@@ -43,8 +43,8 @@ dt_pred = dt_model.predict(X_test)
 dt_acc = accuracy_score(y_test, dt_pred)
 dt_f1 = f1_score(y_test, dt_pred, average="weighted")
 
-print(f"Decision Tree Accuracy: {dt_acc:.4f}")
-print(f"Decision Tree F1-score: {dt_f1:.4f}")
+print(f"Decision Tree Accuracy: {dt_acc:.2f}")
+print(f"Decision Tree F1-score: {dt_f1:.2f}")
 
 #Selecting model
 print('\n Model comparison Process')
