@@ -37,7 +37,7 @@ jobs:
 
       # 5. Train the model
       - name: Train model
-        run: python model.py
+        run: python src/model.py
 
       # 6. Upload results as artefacts
       - name: Upload results
