@@ -86,4 +86,71 @@ def pre_processing():
 
             df_cleaned = df
 
-    #Encode Categorical Features
+
+    #Data normalisation and scaling
+
+
+    #2.1 Apply appropriate scaling to all numerical features based on their distribution
+    df_cleaned.columns = df_cleaned.columns.str.strip()
+    print('MTRANS' in df_cleaned.columns)  
+    numerical_cols = df_cleaned.select_dtypes(include=['number']).columns
+    print(numerical_cols)
+
+    #Loops through all numerical column check in range 0 = normal, > 0.5 = Right skewed, < -0.5 = left skewed and > 1 has outleirs
+    for col in df_cleaned.select_dtypes(include=['number']).columns:
+        print(col, "skew:", df[col].skew())
+
+    # Columns grouped
+    standard_cols = ['Height', 'Weight', 'CH2O', 'FAF']
+    minmax_cols = ['Age', 'FCVC', 'TUE']
+    robust_cols = ['NCP']
+
+    # Apply scaling, Standard scaler Makes data centred, Minmaxscaler shrinks data to 0-1 when there is skewedness and Robustscaler Scales data based on
+    #Middle values and ignore outliers
+    df_cleaned[standard_cols] = StandardScaler().fit_transform(df_cleaned[standard_cols])
+    df_cleaned[minmax_cols] = MinMaxScaler().fit_transform(df_cleaned[minmax_cols])
+    df_cleaned[robust_cols] = RobustScaler().fit_transform(df_cleaned[robust_cols])
+
+
+    #2.2 Convert all non-numerical features to appropriate numerical representations.
+
+    #Find categorical columns
+    categorical_cols = df_cleaned.select_dtypes(include=['object']).columns
+    print(categorical_cols)
+
+    #Check all categories to apply encoding
+    for col in df_cleaned.select_dtypes(include=['object']).columns:
+        print(f"\nColumn: {col}")
+        print(df_cleaned[col].value_counts())
+
+
+
+    #Binary encoding for only 2 values
+
+    binary_cols = ['Gender', 'family_history_with_overweight', 'FAVC', 'SMOKE', 'SCC']
+
+    for col in binary_cols:
+        df_cleaned[col] = df_cleaned[col].map({
+            'yes': 1, 'no': 0,
+            'Male': 1, 'Female': 0
+        })
+
+
+    #Ordinal encoding For hericachical categories
+    df_cleaned['CAEC'] = df['CAEC'].map({
+        'no': 0,
+        'Sometimes': 1,
+        'Frequently': 2,
+        'Always': 3
+    })
+
+    df_cleaned['CALC'] = df['CALC'].map({
+        'no': 0,
+        'Sometimes': 1,
+        'Frequently': 2
+    })
+
+
+    #Nominal Encoding For no order
+    df_cleaned = pd.get_dummies(df_cleaned, columns=['MTRANS'])
+
