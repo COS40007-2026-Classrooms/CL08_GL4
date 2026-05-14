@@ -5,6 +5,7 @@ import joblib
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import LabelEncoder
 
 
 print("="*70)
@@ -88,6 +89,8 @@ def pre_processing():
             'Frequently': 2
         })
 
+
+
     # One-hot encoding
     df = pd.get_dummies(df, columns=['MTRANS'], drop_first=True)
 
@@ -118,6 +121,9 @@ def pre_processing():
 
     X = df.drop(columns=[target])
     y = df[target]
+
+    le = LabelEncoder()
+    y = le.fit_transform(y)
 
     # -----------------------------
     # 7. Train/test split
@@ -151,8 +157,8 @@ def pre_processing():
 
     np.save("artifacts/data/X_train.npy", X_train_scaled)
     np.save("artifacts/data/X_test.npy", X_test_scaled)
-    np.save("artifacts/data/y_train.npy", y_train.values)
-    np.save("artifacts/data/y_test.npy", y_test.values)
+    np.save("artifacts/data/y_train.npy", y_train)
+    np.save("artifacts/data/y_test.npy", y_test)
 
     joblib.dump(scaler, "artifacts/preprocessing/scaler.pkl")
 

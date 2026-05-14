@@ -1,5 +1,6 @@
 import numpy as np
 import joblib
+import os
 
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
@@ -57,3 +58,13 @@ else:
     best_name = "Decision Tree"
 
 print(f"Best Model: {best_name}")
+
+# -------------------------
+# 5. Save best model
+# -------------------------
+os.makedirs("artifacts/models", exist_ok=True)
+
+joblib.dump(best_model, "artifacts/models/best_model.pkl")
+
+print("\nModel saved successfully!")
+print("="*60)
