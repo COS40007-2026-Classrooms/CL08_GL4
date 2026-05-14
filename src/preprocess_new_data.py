@@ -1,23 +1,11 @@
-#Imports
-# Preprocessing
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
-
-# Data splitting
-from sklearn.model_selection import train_test_split
-
-# Metrics
-from sklearn.metrics import (
-    accuracy_score,
-    f1_score,
-    classification_report,
-    confusion_matrix
-)
-
-# Utilities
-import numpy as np
-import pickle
 import os
+import numpy as np
 import pandas as pd
+import joblib
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
 
 print("="*70)
 print("PREPROCESSING NEW DATA")
@@ -26,131 +14,132 @@ print("="*70)
 
 def pre_processing():
 
-    #Check if data exist
+    # -----------------------------
+    # 1. Load dataset
+    # -----------------------------
+    data_path = "data/Obesity.csv"
 
-    data_path = 'data/Obesity.csv'
-
-    if not os.makedirs(data_path):
-        print("The dataset path does not exist")
+    if not os.path.exists(data_path):
+        print("Dataset not found!")
         return False
-    
-    print("="*70)
-    print("Loading Data")
-    print("="*70)   
 
+    print("Loading data...")
     df = pd.read_csv(data_path)
 
-    #Handle Missing Values
-    print('Handling missing Values')
+    # -----------------------------
+    # 2. Missing values
+    # -----------------------------
+    print("Handling missing values...")
     df = df.dropna()
 
-    #Remove duplicates
-    print('Removing duplicate Values')
+    # -----------------------------
+    # 3. Remove duplicates
+    # -----------------------------
+    print("Removing duplicates...")
     df = df.drop_duplicates()
 
-    #Removing Outliers
+    # -----------------------------
+    # 4. Outlier removal (IQR)
+    # -----------------------------
+    print("Removing outliers...")
 
-    # List of numerical columns
-    numerical_cols = df.select_dtypes(include=['number']).columns.tolist()
+    numerical_cols = df.select_dtypes(include=["number"]).columns
 
-    # Detect outliers using IQR, IQR is a method that identifies outliers by calculating the interquartile range this range specifies the common values in the dataset, and any value that falls outside of this range is considered an outlier. 
-    outliers = {}
     for col in numerical_cols:
         Q1 = df[col].quantile(0.25)
         Q3 = df[col].quantile(0.75)
         IQR = Q3 - Q1
-        
-        lower_bound = Q1 - 1.5 * IQR
-        upper_bound = Q3 + 1.5 * IQR
-        
-        #Selects all rows where the value in the column is an outlier, sotes col as key and the outlier rows as value in outleirs dictionary 
-        outliers[col] = df[(df[col] < lower_bound) | (df[col] > upper_bound)]
-        
-        print(f"{col} outliers: {len(outliers[col])}")
 
-        #For each numerical column, calculate IQR then remove values in df where it is outside Q1 and q3
-        for col in numerical_cols:
+        lower = Q1 - 1.5 * IQR
+        upper = Q3 + 1.5 * IQR
 
-            q1 = df[col].quantile(0.25)
-            q3 = df[col].quantile(0.75)
-            iqr = q3 - q1
+        df = df[(df[col] >= lower) & (df[col] <= upper)]
 
-            lower_bound = q1 - 1.5 * iqr
-            upper_bound = q3 + 1.5 * iqr
+    # -----------------------------
+    # 5. Encoding categorical data
+    # -----------------------------
+    print("Encoding categorical data...")
 
-            # Detect outliers
-            outliers = df[(df[col] < lower_bound) | (df[col] > upper_bound)]
-
-            # Remove outliers
-            df = df[(df[col] >= lower_bound) & (df[col] <= upper_bound)]
-
-            df_cleaned = df
-
-
-    #Data normalisation and scaling
-
-
-    #2.1 Apply appropriate scaling to all numerical features based on their distribution
-    df_cleaned.columns = df_cleaned.columns.str.strip()
-    print('MTRANS' in df_cleaned.columns)  
-    numerical_cols = df_cleaned.select_dtypes(include=['number']).columns
-    print(numerical_cols)
-
-    #Loops through all numerical column check in range 0 = normal, > 0.5 = Right skewed, < -0.5 = left skewed and > 1 has outleirs
-    for col in df_cleaned.select_dtypes(include=['number']).columns:
-        print(col, "skew:", df[col].skew())
-
-    # Columns grouped
-    standard_cols = ['Height', 'Weight', 'CH2O', 'FAF']
-    minmax_cols = ['Age', 'FCVC', 'TUE']
-    robust_cols = ['NCP']
-
-    # Apply scaling, Standard scaler Makes data centred, Minmaxscaler shrinks data to 0-1 when there is skewedness and Robustscaler Scales data based on
-    #Middle values and ignore outliers
-    df_cleaned[standard_cols] = StandardScaler().fit_transform(df_cleaned[standard_cols])
-    df_cleaned[minmax_cols] = MinMaxScaler().fit_transform(df_cleaned[minmax_cols])
-    df_cleaned[robust_cols] = RobustScaler().fit_transform(df_cleaned[robust_cols])
-
-
-    #2.2 Convert all non-numerical features to appropriate numerical representations.
-
-    #Find categorical columns
-    categorical_cols = df_cleaned.select_dtypes(include=['object']).columns
-    print(categorical_cols)
-
-    #Check all categories to apply encoding
-    for col in df_cleaned.select_dtypes(include=['object']).columns:
-        print(f"\nColumn: {col}")
-        print(df_cleaned[col].value_counts())
-
-
-
-    #Binary encoding for only 2 values
-
+    # Binary mapping
     binary_cols = ['Gender', 'family_history_with_overweight', 'FAVC', 'SMOKE', 'SCC']
 
+    binary_map = {
+        'yes': 1, 'no': 0,
+        'Male': 1, 'Female': 0
+    }
+
     for col in binary_cols:
-        df_cleaned[col] = df_cleaned[col].map({
-            'yes': 1, 'no': 0,
-            'Male': 1, 'Female': 0
+        if col in df.columns:
+            df[col] = df[col].map(binary_map)
+
+    # Ordinal encoding
+    if 'CAEC' in df.columns:
+        df['CAEC'] = df['CAEC'].map({
+            'no': 0,
+            'Sometimes': 1,
+            'Frequently': 2,
+            'Always': 3
         })
 
+    if 'CALC' in df.columns:
+        df['CALC'] = df['CALC'].map({
+            'no': 0,
+            'Sometimes': 1,
+            'Frequently': 2
+        })
 
-    #Ordinal encoding For hericachical categories
-    df_cleaned['CAEC'] = df['CAEC'].map({
-        'no': 0,
-        'Sometimes': 1,
-        'Frequently': 2,
-        'Always': 3
-    })
+    # One-hot encoding
+    df = pd.get_dummies(df, columns=['MTRANS'], drop_first=True)
 
-    df_cleaned['CALC'] = df['CALC'].map({
-        'no': 0,
-        'Sometimes': 1,
-        'Frequently': 2
-    })
+    # -----------------------------
+    # 6. Split features/target
+    # -----------------------------
+    target = "NObeyesdad"
+
+    X = df.drop(columns=[target])
+    y = df[target]
+
+    # -----------------------------
+    # 7. Train/test split
+    # -----------------------------
+    print("Splitting data...")
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y,
+        test_size=0.2,
+        random_state=42,
+        stratify=y
+    )
+
+    # -----------------------------
+    # 8. Scaling
+    # -----------------------------
+    print("Scaling features...")
+
+    scaler = StandardScaler()
+
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+
+    # -----------------------------
+    # 9. Save artifacts
+    # -----------------------------
+    print("Saving processed data...")
+
+    os.makedirs("artifacts/data", exist_ok=True)
+    os.makedirs("artifacts/preprocessing", exist_ok=True)
+
+    np.save("artifacts/data/X_train.npy", X_train_scaled)
+    np.save("artifacts/data/X_test.npy", X_test_scaled)
+    np.save("artifacts/data/y_train.npy", y_train.values)
+    np.save("artifacts/data/y_test.npy", y_test.values)
+
+    joblib.dump(scaler, "artifacts/preprocessing/scaler.pkl")
+
+    print("Preprocessing complete!")
+
+    return X_train_scaled, X_test_scaled, y_train, y_test
 
 
-    #Nominal Encoding For no order
-    df_cleaned = pd.get_dummies(df_cleaned, columns=['MTRANS'])
-
+if __name__ == "__main__":
+    pre_processing()
