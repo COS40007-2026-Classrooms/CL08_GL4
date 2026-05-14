@@ -1,26 +1,17 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
+import joblib
 
-# Generate random data
-X = np.random.rand(100, 1) * 10  # 100 random points between 0 and 10
-y = 2 * X + 3 + np.random.randn(100, 1) * 2  # Linear relation with some noise 
-
-model = LinearRegression()
-model.fit(X, y)
-
-y_pred = model.predict(X)
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, f1_score
 
 
-plt.scatter(X, y, color='blue', label='Data Points')
-plt.plot(X, y_pred, color='red', label='Linear Fit')
-plt.legend()
-plt.title('Linear Regression Example')
-plt.savefig('model_results.png')
+print("="*60)
+print("MODEL TRAINING - SVM vs Decision Tree")
+print("="*60)
 
-metric = np.mean((y - y_pred) ** 2)
-
-with open('metrics.txt', 'w') as f:
-    f.write(f'Mean Squared Error: {metric}\n')
-
-print(f'Mean Squared Error: {metric}')
+#Data Loading
+X_train = np.load("artifacts/data/X_train.npy")
+X_test = np.load("artifacts/data/X_test.npy")
+y_train = np.load("artifacts/data/y_train.npy")
+y_test = np.load("artifacts/data/y_test.npy")
