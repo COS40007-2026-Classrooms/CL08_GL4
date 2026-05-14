@@ -37,7 +37,7 @@ jobs:
 
       # 5. Preprocess new data
       - name: Preprocess new data
-        run: python src/preprocess_new_data.p
+        run: python src/preprocess_new_data.py
 
       # 6. Train the model
       - name: Train model
