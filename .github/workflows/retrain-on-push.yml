@@ -35,15 +35,19 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # 5. Train the model
+      # 5. Preprocess new data
+      - name: Preprocess new data
+        run: python src/preprocess_new_data.p
+
+      # 6. Train the model
       - name: Train model
         run: python src/model.py
 
-      # 6. Run monitoring
+      # 7. Run monitoring
       - name: Run monitoring
         run: python src/monitor.py
 
-      # 7. Upload results as artefacts
+      # 8. Upload results as artefacts
       - name: Upload results
         uses: actions/upload-artifact@v4
         with:
