@@ -39,7 +39,11 @@ jobs:
       - name: Train model
         run: python src/model.py
 
-      # 6. Upload results as artefacts
+      # 6. Run monitoring
+      - name: Run monitoring
+        run: python src/monitor.py
+
+      # 7. Upload results as artefacts
       - name: Upload results
         uses: actions/upload-artifact@v4
         with:
