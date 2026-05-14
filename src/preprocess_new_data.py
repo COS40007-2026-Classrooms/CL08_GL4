@@ -91,6 +91,26 @@ def pre_processing():
     # One-hot encoding
     df = pd.get_dummies(df, columns=['MTRANS'], drop_first=True)
 
+
+    # -----------------------------
+    # FEATURE ENGINEERING
+    # -----------------------------
+    print("Creating new features...")
+
+    # 1. BMI (Body Mass Index)
+    if 'Weight' in df.columns and 'Height' in df.columns:
+        df['BMI'] = df['Weight'] / (df['Height'] ** 2)
+
+    # 2. Activity score (physical activity - screen time)
+    if 'FAF' in df.columns and 'TUE' in df.columns:
+        df['Activity_Score'] = df['FAF'] - df['TUE']
+
+    # 3. Eating behavior score
+    if 'FCVC' in df.columns and 'NCP' in df.columns:
+        df['Eating_Behavior'] = df['FCVC'] + df['NCP']
+
+    print("Feature engineering complete!")
+
     # -----------------------------
     # 6. Split features/target
     # -----------------------------
