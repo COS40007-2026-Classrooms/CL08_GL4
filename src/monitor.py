@@ -59,4 +59,34 @@ with open("logs/monitoring.log", "w") as f:
     f.write(f"Threshold: {accuracy_threshold}\n")
     f.write(f"Status: {status}\n")
 
+from datetime import datetime
+
+os.makedirs("monitoring/reports", exist_ok=True)
+os.makedirs("monitoring/logs", exist_ok=True)
+os.makedirs("monitoring/alerts", exist_ok=True)
+os.makedirs("artifacts/metadata", exist_ok=True)
+
+# Simple drift detection
+drift_detected = accuracy < accuracy_threshold
+
+drift_report = {
+    "accuracy": accuracy,
+    "f1_score": f1,
+    "accuracy_threshold": accuracy_threshold,
+    "drift_detected": drift_detected,
+    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+}
+
+with open("monitoring/reports/drift_report.json", "w") as f:
+    json.dump(drift_report, f, indent=4)
+
+with open("monitoring/logs/drift_detection.log", "w") as f:
+    if drift_detected:
+        f.write("Drift detected. Retraining recommended.\n")
+    else:
+        f.write("No drift detected. Model performance acceptable.\n")
+
+with open("artifacts/metadata/last_retrain.txt", "w") as f:
+    f.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
 print("Monitoring results saved successfully.")
