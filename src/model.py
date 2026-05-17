@@ -137,23 +137,6 @@ joblib.dump(best_model, "artifacts/models/best_model.pkl")
 print("\nModel saved successfully!")
 print("="*60)
 
-# -------------------------
-# 6. Saving test metrics
-# -------------------------
-test_metrics = {
-    "model_name": best_name,
-    "accuracy": float(best_acc),
-    "f1_score": float(best_f1),
-    "precision": float(best_precision),
-    "recall": float(best_recall),
-    "test_samples": int(len(y_test)),
-    "timestamp": datetime.now().isoformat()
-}
-
-with open("artifacts/metrics/test_metrics.json", "w") as f:
-    json.dump(test_metrics, f, indent=4)
-print("Saved test_metrics.json")
-
 # ────────────────────────────────────
 # Save Model Metadata
 # ────────────────────────────────────
@@ -226,7 +209,7 @@ print("    ├── feature_columns.json")
 print("    ├── target_column.json")
 print("    └── scaler.pkl")
 print("  artifacts/metrics/")
-print("    └── test_metrics.json")
+print("    └── ")
 print("  artifacts/metadata/")
 print("    ├── model_info.json")
 print("    └── data_info.json")
