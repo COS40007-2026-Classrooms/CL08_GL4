@@ -45,6 +45,30 @@ print(f"\nSaved feature_columns.json ({num_features} features)")
 # ────────────────────────────────────
 # Target Column Info
 # ────────────────────────────────────
+target_info = {
+    "target_column": "obesity_class",
+    "num_classes": len(np.unique(y_train)),
+    "unique_classes": sorted([int(c) for c in np.unique(y_train)])
+}
+with open("artifacts/preprocessing/target_column.json", "w") as f:
+    json.dump(target_info, f, indent=4)
+print(f"Saved target_column.json ({target_info['num_classes']} classes)")
+
+# ────────────────────────────────────
+# Create and Save Scaler
+# ────────────────────────────────────
+print("\nCreating StandardScaler...")
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+joblib.dump(scaler, "artifacts/preprocessing/scaler.pkl")
+print("Saved scaler.pkl")
+
+# Save scaled data (backup/reference for downstream use)
+np.save("artifacts/data/X_train_scaled.npy", X_train_scaled)
+np.save("artifacts/data/X_test_scaled.npy", X_test_scaled)
+print("Saved X_train_scaled.npy and X_test_scaled.npy")
 
 #SVM Model
 print('\n Training SVM Model')
