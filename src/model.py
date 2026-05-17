@@ -140,27 +140,40 @@ print("="*60)
 # ────────────────────────────────────
 # Save Model Metadata
 # ────────────────────────────────────
-model_metadata = {
-    "model_type": best_name,
-    "model_name": best_name.lower().replace(" ", "_"),
-    "num_features": num_features,
-    "num_classes": target_info["num_classes"],
-    "feature_columns": feature_columns,
-    "target_column": target_info["target_column"],
-    "training_samples": int(len(y_train)),
-    "test_samples": int(len(y_test)),
-    "training_completed": datetime.now().isoformat(),
+data_info = {
     "hyperparameters": {
         "model": best_name,
-        "svm": {"kernel": "rbf", "C": 1, "gamma": "scale"} if best_name == "SVM" else None,
-        "decision_tree": {"max_depth": 10, "random_state": 42} if best_name == "Decision Tree" else None
+        "svm": {
+            "kernel": "rbf",
+            "C": 1,
+            "gamma": "scale"
+        } if best_name == "SVM" else None,
+
+        "decision_tree": {
+            "max_depth": 10,
+            "random_state": 42
+        } if best_name == "Decision Tree" else None
     },
+
+    "train_samples": int(len(y_train)),
+    "test_samples": int(len(y_test)),
+    "features_count": num_features,
+    "target_classes": target_info["num_classes"],
+
+    "target_min": int(np.min(y_test)),
+    "target_max": int(np.max(y_test)),
+    "target_mean": float(np.mean(y_test)),
+    "target_std": float(np.std(y_test)),
+
+    "scaler_type": "StandardScaler",
+
     "test_performance": {
         "accuracy": float(best_acc),
         "f1_score": float(best_f1),
         "precision": float(best_precision),
         "recall": float(best_recall)
     },
+
     "data_info": {
         "train_samples": int(len(y_train)),
         "test_samples": int(len(y_test)),
@@ -170,33 +183,15 @@ model_metadata = {
         "target_max": int(np.max(y_test)),
         "target_mean": float(np.mean(y_test)),
         "target_std": float(np.std(y_test))
-    }
-}
+    },
 
-with open("artifacts/metadata/model_info.json", "w") as f:
-    json.dump(model_metadata, f, indent=4)
-print("Saved model_info.json")
-
-# ────────────────────────────────────
-# Save Data Info Summary
-# ────────────────────────────────────
-data_info = {
-    "train_samples": int(len(y_train)),
-    "test_samples": int(len(y_test)),
-    "features_count": num_features,
-    "target_classes": target_info["num_classes"],
-    "target_min": int(np.min(y_test)),
-    "target_max": int(np.max(y_test)),
-    "target_mean": float(np.mean(y_test)),
-    "target_std": float(np.std(y_test)),
-    "scaler_type": "StandardScaler",
     "timestamp": datetime.now().isoformat()
 }
 
-with open("artifacts/metadata/data_info.json", "w") as f:
+with open("artifacts/metadata/model_data_info.json", "w") as f:
     json.dump(data_info, f, indent=4)
-print("Saved data_info.json")
 
+print("Saved model_data_info.json")
 # ────────────────────────────────────
 # Final Summary
 # ────────────────────────────────────
@@ -211,7 +206,6 @@ print("    └── scaler.pkl")
 print("  artifacts/metrics/")
 print("    └── ")
 print("  artifacts/metadata/")
-print("    ├── model_info.json")
 print("    └── data_info.json")
 print("  artifacts/models/")
 print("    └── best_model.pkl")
