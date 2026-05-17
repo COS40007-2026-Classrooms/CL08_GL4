@@ -193,3 +193,46 @@ model_metadata = {
 with open("artifacts/metadata/model_info.json", "w") as f:
     json.dump(model_metadata, f, indent=4)
 print("Saved model_info.json")
+
+# ────────────────────────────────────
+# Save Data Info Summary
+# ────────────────────────────────────
+data_info = {
+    "train_samples": int(len(y_train)),
+    "test_samples": int(len(y_test)),
+    "features_count": num_features,
+    "target_classes": target_info["num_classes"],
+    "target_min": int(np.min(y_test)),
+    "target_max": int(np.max(y_test)),
+    "target_mean": float(np.mean(y_test)),
+    "target_std": float(np.std(y_test)),
+    "scaler_type": "StandardScaler",
+    "timestamp": datetime.now().isoformat()
+}
+
+with open("artifacts/metadata/data_info.json", "w") as f:
+    json.dump(data_info, f, indent=4)
+print("Saved data_info.json")
+
+# ────────────────────────────────────
+# Final Summary
+# ────────────────────────────────────
+print("\n" + "="*60)
+print("TRAINING COMPLETE - ALL ARTIFACTS SAVED")
+print("="*60)
+print("\nArtifacts saved to:")
+print("  artifacts/preprocessing/")
+print("    ├── feature_columns.json")
+print("    ├── target_column.json")
+print("    └── scaler.pkl")
+print("  artifacts/metrics/")
+print("    └── test_metrics.json")
+print("  artifacts/metadata/")
+print("    ├── model_info.json")
+print("    └── data_info.json")
+print("  artifacts/models/")
+print("    └── best_model.pkl")
+print("  artifacts/data/")
+print("    ├── X_train_scaled.npy")
+print("    └── X_test_scaled.npy")
+print("="*60)
