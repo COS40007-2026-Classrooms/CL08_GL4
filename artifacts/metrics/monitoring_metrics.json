@@ -1,6 +1,0 @@
-{
-    "accuracy": 0.9782608695652174,
-    "f1_score": 0.9782581652896495,
-    "threshold": 0.8,
-    "status": "Model performance is acceptable."
-}

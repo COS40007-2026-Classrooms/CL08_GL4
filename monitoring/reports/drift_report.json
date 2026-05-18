@@ -1,7 +1,0 @@
-{
-    "accuracy": 0.9782608695652174,
-    "f1_score": 0.9782581652896495,
-    "accuracy_threshold": 0.8,
-    "drift_detected": false,
-    "timestamp": "2026-05-17 11:06:01"
-}
