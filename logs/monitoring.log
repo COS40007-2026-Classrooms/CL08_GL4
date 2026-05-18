@@ -1,0 +1,6 @@
+MODEL MONITORING REPORT
+=======================
+Accuracy: 0.9783
+F1-score: 0.9783
+Threshold: 0.8
+Status: Model performance is acceptable.
