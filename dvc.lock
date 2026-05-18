@@ -1,0 +1,66 @@
+schema: '2.0'
+stages:
+  preprocess:
+    cmd: python3 src/preprocess_new_data.py
+    deps:
+    - path: data/Obesity.csv
+      hash: md5
+      md5: e660c01e3c20b80994c4f92eb539d482
+      size: 261534
+    - path: src/preprocess_new_data.py
+      hash: md5
+      md5: 4ccb2e32812058103086a615caff6a74
+      size: 4323
+    outs:
+    - path: artifacts/data
+      hash: md5
+      md5: 75ae255915cb8743c29f9480aec7b7e5.dir
+      size: 253696
+      nfiles: 4
+    - path: artifacts/preprocessing
+      hash: md5
+      md5: a0c0764226dda29b470820c6a8a8d02d.dir
+      size: 1607
+      nfiles: 1
+  train:
+    cmd: python3 src/model.py
+    deps:
+    - path: artifacts/data
+      hash: md5
+      md5: a6a16dad9d5b940a400f41395f669c43.dir
+      size: 496128
+      nfiles: 6
+    - path: src/model.py
+      hash: md5
+      md5: 87c1c8c2470b439273fa458d8ba9bbaa
+      size: 7375
+    outs:
+    - path: artifacts/models/best_model.pkl
+      hash: md5
+      md5: 2db01ea986d7ba8307e3036ebcf09aa7
+      size: 8193
+  monitor:
+    cmd: python3 src/monitor.py
+    deps:
+    - path: artifacts/data
+      hash: md5
+      md5: a6a16dad9d5b940a400f41395f669c43.dir
+      size: 496128
+      nfiles: 6
+    - path: artifacts/models/best_model.pkl
+      hash: md5
+      md5: 2db01ea986d7ba8307e3036ebcf09aa7
+      size: 8193
+    - path: src/monitor.py
+      hash: md5
+      md5: 8efa01e17d1b097d1bb31875ccba789c
+      size: 2595
+    outs:
+    - path: artifacts/metrics/monitoring_metrics.json
+      hash: md5
+      md5: 8bcc91e1fac7377c19472b9e927aa49e
+      size: 146
+    - path: monitoring/reports/drift_report.json
+      hash: md5
+      md5: 577993eb912af4be580a259c4530197f
+      size: 174

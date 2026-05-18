@@ -1,0 +1,25 @@
+stages:
+  preprocess:
+    cmd: python3 src/preprocess_new_data.py
+    deps:
+    - data/Obesity.csv
+    - src/preprocess_new_data.py
+    outs:
+    - artifacts/data
+    - artifacts/preprocessing
+  train:
+    cmd: python3 src/model.py
+    deps:
+    - artifacts/data
+    - src/model.py
+    outs:
+    - artifacts/models/best_model.pkl
+  monitor:
+    cmd: python3 src/monitor.py
+    deps:
+    - artifacts/data
+    - artifacts/models/best_model.pkl
+    - src/monitor.py
+    outs:
+    - artifacts/metrics/monitoring_metrics.json
+    - monitoring/reports/drift_report.json
