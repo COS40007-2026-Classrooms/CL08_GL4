@@ -6,6 +6,8 @@ on:
   pull_request:
     branches: [ main ]   # runs on pull requests to main
   workflow_dispatch:     # allows manual trigger from GitHub UI
+    schedule:
+    - cron: "0 0 * * *"   # runs daily at midnight UTC
 
 jobs:
   train:
