@@ -23,8 +23,8 @@ os.makedirs("artifacts/data", exist_ok=True)
 
 
 #Data Loading
-X_train = np.load("artifacts/data/X_train.npy")
-X_test = np.load("artifacts/data/X_test.npy")
+X_train = np.load("artifacts/data/X_train_scaled.npy")
+X_test = np.load("artifacts/data/X_test_scaled.npy")
 y_train = np.load("artifacts/data/y_train.npy")
 y_test = np.load("artifacts/data/y_test.npy")
 
