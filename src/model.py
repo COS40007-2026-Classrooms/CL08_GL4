@@ -9,6 +9,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.preprocessing import StandardScaler
 
+import matplotlib.pyplot as plt
+
 
 print("="*60)
 print("MODEL TRAINING - SVM vs Decision Tree")
@@ -126,6 +128,34 @@ else:
     best_recall = dt_recall
 
 print(f"Best Model: {best_name}")
+
+# ────────────────────────────────────
+# Plotting traing SVM_acc vs DT_acc
+# ────────────────────────────────────
+
+models = ['SVM', 'Decision Tree']
+accuracies = [svm_acc, dt_acc]
+
+#Create bar
+plt.figure(figsize=(10, 6))
+plt.bar(models, accuracies, color=['blue', 'orange'])
+
+#Labels
+plt.ylabel('Accuracy')
+plt.title('Model Accuracy Comparison')
+
+#Accuracy range
+plt.ylim(0, 1)
+
+#Show accuracy values on bars
+for i, acc in enumerate(accuracies):
+    plt.text(i, acc + 0.01, f'{acc:.2f}', ha='center')
+
+#Save plot
+plt.savefig('artifacts/model_comparison.png')
+
+
+
 
 # -------------------------
 # 5. Save best model
