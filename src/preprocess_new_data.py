@@ -1,4 +1,8 @@
 import os
+
+# Pull dataset from DVC
+os.system("dvc pull")
+
 import numpy as np
 import pandas as pd
 import joblib
