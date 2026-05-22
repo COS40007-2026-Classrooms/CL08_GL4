@@ -41,6 +41,12 @@ jobs:
       - name: Preprocess new data
         run: python src/preprocess_new_data.py
 
+      # Check generated files
+      - name: Check artifacts after preprocessing
+        run: |
+          echo "Checking artifacts/data folder"
+          ls -la artifacts/data
+
       # 6. Train the model
       - name: Train model
         run: python src/model.py
