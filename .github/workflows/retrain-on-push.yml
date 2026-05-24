@@ -60,6 +60,10 @@ jobs:
           echo "Checking artifacts/data folder"
           ls -la artifacts/data
 
+      # Pull dataset from DVC
+      - name: Pull DVC data
+        run: dvc pull
+
       # 6. Train the model
       - name: Train model
         run: python src/model.py
