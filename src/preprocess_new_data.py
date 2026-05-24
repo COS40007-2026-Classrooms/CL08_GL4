@@ -61,37 +61,36 @@ def pre_processing():
         df = df[(df[col] >= lower) & (df[col] <= upper)]
 
     # -----------------------------
-    # 5. Encoding categorical data
+    # 5. Load feature columns
     # -----------------------------
     print("Encoding categorical data...")
 
     # Binary mapping
-    binary_cols = ['Gender', 'family_history_with_overweight', 'FAVC', 'SMOKE', 'SCC']
+    feature_columns_path = 'artifacts/preprocessing/feature_columns.json'
+    if not os.path.exists(feature_columns_path):
+        feature_columns_path = 'artifacts/feature_columns.json'
+        if not os.path.exists(feature_columns_path):
+            print(f"Feature columns not found at {feature_columns_path}")
+            return False
 
-    binary_map = {
-        'yes': 1, 'no': 0,
-        'Male': 1, 'Female': 0
-    }
+    with open(feature_columns_path, 'r') as f:
+        feature_columns = json.load(f)
+    print(f"Loaded {len(feature_columns)} feature columns")
 
-    for col in binary_cols:
-        if col in df.columns:
-            df[col] = df[col].map(binary_map)
+    # 4. Extract target column
+    print("\n Processing data...")
+    if 'target' in df.columns:
+        y_new = df['target'].values
+        X_df = df.drop('target', axis=1)
+    elif 'y' in df.columns:
+        y_new = df['y'].values
+        X_df = df.drop('y', axis=1)
+    else:
+        y_new = df.iloc[:, -1].values
+        X_df = df.iloc[:, :-1]
 
-    # Ordinal encoding
-    if 'CAEC' in df.columns:
-        df['CAEC'] = df['CAEC'].map({
-            'no': 0,
-            'Sometimes': 1,
-            'Frequently': 2,
-            'Always': 3
-        })
-
-    if 'CALC' in df.columns:
-        df['CALC'] = df['CALC'].map({
-            'no': 0,
-            'Sometimes': 1,
-            'Frequently': 2
-        })
+    print(f"Target shape: {y_new.shape}")
+ 
 
 
 
