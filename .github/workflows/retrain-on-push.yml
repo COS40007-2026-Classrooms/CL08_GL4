@@ -52,7 +52,7 @@ jobs:
           
       # Pull dataset from DVC
       - name: Pull DVC data
-        run: dvc pull
+        run: dvc pull data/Obesity.csv.dvc
 
       # 5. Preprocess new data
       - name: Preprocess new data
