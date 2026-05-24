@@ -1,7 +1,7 @@
 schema: '2.0'
 stages:
   preprocess:
-    cmd: python3 src/preprocess_new_data.py
+    cmd: python src/preprocess_new_data.py
     deps:
     - path: data/Obesity.csv
       hash: md5
@@ -9,8 +9,8 @@ stages:
       size: 261534
     - path: src/preprocess_new_data.py
       hash: md5
-      md5: 4ccb2e32812058103086a615caff6a74
-      size: 4323
+      md5: d9b5907c9e4ccda049f843c56b5bb024
+      size: 3627
     outs:
     - path: artifacts/data
       hash: md5
