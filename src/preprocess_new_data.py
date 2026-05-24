@@ -1,173 +1,143 @@
 import os
-
-# Pull dataset from DVC
-os.system("dvc pull")
-
 import numpy as np
 import pandas as pd
 import joblib
+import json
 
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 
 
-print("="*70)
-print("PREPROCESSING NEW DATA")
-print("="*70)
+print("=" * 70)
+print("PREPROCESSING (NEW DATA)")
+print("=" * 70)
+
+
+def load_feature_columns():
+    paths = [
+        "artifacts/preprocessing/feature_columns.json",
+        "artifacts/feature_columns.json"
+    ]
+
+    for p in paths:
+        if os.path.exists(p):
+            with open(p) as f:
+                return json.load(f)
+
+    return None
 
 
 def pre_processing():
 
     # -----------------------------
-    # 1. Load dataset
+    # 1. Pull data
     # -----------------------------
-    data_path = "data/Obesity.csv"
+    os.system("dvc pull")
 
-    if not os.path.exists(data_path):
+    path = "data/Obesity.csv"
+
+    if not os.path.exists(path):
         print("Dataset not found!")
         return False
 
-    print("Loading data...")
-    df = pd.read_csv(data_path)
+    df = pd.read_csv(path)
+    print(f"Loaded data: {df.shape}")
 
     # -----------------------------
-    # 2. Missing values
+    # 2. Clean
     # -----------------------------
-    print("Handling missing values...")
-    df = df.dropna()
+    df = df.dropna().drop_duplicates()
 
-    # -----------------------------
-    # 3. Remove duplicates
-    # -----------------------------
-    print("Removing duplicates...")
-    df = df.drop_duplicates()
+    # outlier removal (optional safe)
+    num_cols = df.select_dtypes(include=["number"]).columns
 
-    # -----------------------------
-    # 4. Outlier removal (IQR)
-    # -----------------------------
-    print("Removing outliers...")
-
-    numerical_cols = df.select_dtypes(include=["number"]).columns
-
-    for col in numerical_cols:
-        Q1 = df[col].quantile(0.25)
-        Q3 = df[col].quantile(0.75)
-        IQR = Q3 - Q1
-
-        lower = Q1 - 1.5 * IQR
-        upper = Q3 + 1.5 * IQR
-
-        df = df[(df[col] >= lower) & (df[col] <= upper)]
+    for col in num_cols:
+        q1, q3 = df[col].quantile([0.25, 0.75])
+        iqr = q3 - q1
+        df = df[(df[col] >= q1 - 1.5 * iqr) & (df[col] <= q3 + 1.5 * iqr)]
 
     # -----------------------------
-    # 5. Load feature columns
+    # 3. Load feature schema (IMPORTANT)
     # -----------------------------
-    print("Encoding categorical data...")
+    feature_columns = load_feature_columns()
 
-    # Binary mapping
-    feature_columns_path = 'artifacts/preprocessing/feature_columns.json'
-    if not os.path.exists(feature_columns_path):
-        feature_columns_path = 'artifacts/feature_columns.json'
-        if not os.path.exists(feature_columns_path):
-            print(f"Feature columns not found at {feature_columns_path}")
-            return False
-
-    with open(feature_columns_path, 'r') as f:
-        feature_columns = json.load(f)
-    print(f"Loaded {len(feature_columns)} feature columns")
-
-    # 4. Extract target column
-    print("\n Processing data...")
-    if 'target' in df.columns:
-        y_new = df['target'].values
-        X_df = df.drop('target', axis=1)
-    elif 'y' in df.columns:
-        y_new = df['y'].values
-        X_df = df.drop('y', axis=1)
-    else:
-        y_new = df.iloc[:, -1].values
-        X_df = df.iloc[:, :-1]
-
-    print(f"Target shape: {y_new.shape}")
- 
-
-
-
-    # One-hot encoding
-    df = pd.get_dummies(df, columns=['MTRANS'], drop_first=True)
-
+    if not feature_columns:
+        print("Feature schema missing!")
+        return False
 
     # -----------------------------
-    # FEATURE ENGINEERING
+    # 4. Detect target column flexibly
     # -----------------------------
-    print("Creating new features...")
+    target_candidates = ["NObeyesdad", "target", "y"]
 
-    # 1. BMI (Body Mass Index)
-    if 'Weight' in df.columns and 'Height' in df.columns:
-        df['BMI'] = df['Weight'] / (df['Height'] ** 2)
+    target_col = None
+    for col in target_candidates:
+        if col in df.columns:
+            target_col = col
+            break
 
-    # 2. Activity score (physical activity - screen time)
-    if 'FAF' in df.columns and 'TUE' in df.columns:
-        df['Activity_Score'] = df['FAF'] - df['TUE']
+    if not target_col:
+        target_col = df.columns[-1]  # fallback
 
-    # 3. Eating behavior score
-    if 'FCVC' in df.columns and 'NCP' in df.columns:
-        df['Eating_Behavior'] = df['FCVC'] + df['NCP']
+    y = df[target_col]
+    X = df.drop(columns=[target_col])
 
-    print("Feature engineering complete!")
-
-    # -----------------------------
-    # 6. Split features/target
-    # -----------------------------
-    target = "NObeyesdad"
-
-    X = df.drop(columns=[target])
-    y = df[target]
-
+    # encode labels
     le = LabelEncoder()
     y = le.fit_transform(y)
 
     # -----------------------------
-    # 7. Train/test split
+    # 5. ALIGN FEATURES (KEY PART)
     # -----------------------------
-    print("Splitting data...")
+    print("Aligning features to training schema...")
 
+    for col in feature_columns:
+        if col not in X.columns:
+            X[col] = 0  # missing column
+        else:
+            X[col] = X[col]
+
+    # drop extra columns
+    X = X[feature_columns]
+
+    # handle non-numeric safely
+    X = X.apply(pd.to_numeric, errors="coerce").fillna(0)
+
+    # -----------------------------
+    # 6. Split
+    # -----------------------------
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y,
+        X.values,
+        y,
         test_size=0.2,
         random_state=42,
         stratify=y
     )
 
     # -----------------------------
-    # 8. Scaling
+    # 7. Scale
     # -----------------------------
-    print("Scaling features...")
-
     scaler = StandardScaler()
 
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
 
     # -----------------------------
-    # 9. Save artifacts
+    # 8. Save
     # -----------------------------
-    print("Saving processed data...")
-
     os.makedirs("artifacts/data", exist_ok=True)
     os.makedirs("artifacts/preprocessing", exist_ok=True)
 
-    np.save("artifacts/data/X_train.npy", X_train_scaled)
-    np.save("artifacts/data/X_test.npy", X_test_scaled)
+    np.save("artifacts/data/X_train.npy", X_train)
+    np.save("artifacts/data/X_test.npy", X_test)
     np.save("artifacts/data/y_train.npy", y_train)
     np.save("artifacts/data/y_test.npy", y_test)
 
     joblib.dump(scaler, "artifacts/preprocessing/scaler.pkl")
+    joblib.dump(le, "artifacts/preprocessing/label_encoder.pkl")
 
-    print("Preprocessing complete!")
-
-    return X_train_scaled, X_test_scaled, y_train, y_test
+    print("Done preprocessing!")
+    return True
 
 
 if __name__ == "__main__":
