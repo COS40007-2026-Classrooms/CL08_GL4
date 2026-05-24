@@ -134,7 +134,6 @@ def pre_processing():
     np.save("artifacts/data/y_test.npy", y_test)
 
     joblib.dump(scaler, "artifacts/preprocessing/scaler.pkl")
-    joblib.dump(le, "artifacts/preprocessing/label_encoder.pkl")
 
     print("Done preprocessing!")
     return True
