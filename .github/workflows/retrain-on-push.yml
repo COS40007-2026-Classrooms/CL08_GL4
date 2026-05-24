@@ -49,6 +49,10 @@ jobs:
           dvc remote modify origin --local auth basic
           dvc remote modify origin --local user "${{ secrets.DAGSHUB_USERNAME }}"
           dvc remote modify origin --local password "${{ secrets.DAGSHUB_TOKEN }}"
+          
+      # Pull dataset from DVC
+      - name: Pull DVC data
+        run: dvc pull
 
       # 5. Preprocess new data
       - name: Preprocess new data
