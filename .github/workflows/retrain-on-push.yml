@@ -65,4 +65,5 @@ jobs:
             artifacts/metrics/
             monitoring/reports/
             artifacts/preprocessing/
+            artifacts/model_comparison.png
 

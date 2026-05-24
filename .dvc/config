@@ -2,3 +2,6 @@
     remote = origin
 ['remote "origin"']
     url = https://dagshub.com/GimhaniEdiri/CL08_GL4.dvc
+    auth = basic
+    user = Alex-Phan-swin
+    password = d1ccdc0e7f187692c14a199aee4485da8f5ad996
