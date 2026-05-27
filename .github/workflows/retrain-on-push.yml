@@ -71,7 +71,7 @@ jobs:
       # 7. Pull latest dataset from DVC
       - name: Pull latest DVC data
         run: |
-          dvc pull
+          dvc pull -- force --allow-missing || echo "DVC pull completed with warnings"
 
         # run: |
         #   dvc pull data/Obesity.csv.dvc --force --allow-missing || echo "DVC pull completed with warnings"

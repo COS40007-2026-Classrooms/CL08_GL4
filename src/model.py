@@ -40,7 +40,7 @@ print('Data Loaded Succesfully')
 num_features = X_train.shape[1]
 feature_columns = [f"feature_{i}" for i in range(num_features)]
 
-with open("artifacts/preprocessing/feature_columns.json", "w") as f:
+with open("artifacts/feature_columns.json", "w") as f:
     json.dump(feature_columns, f, indent=4)
 print(f"\nSaved feature_columns.json ({num_features} features)")
 
@@ -52,9 +52,9 @@ target_info = {
     "num_classes": len(np.unique(y_train)),
     "unique_classes": sorted([int(c) for c in np.unique(y_train)])
 }
-with open("artifacts/preprocessing/target_column.json", "w") as f:
+with open("artifacts/target_columns.json", "w") as f:
     json.dump(target_info, f, indent=4)
-print(f"Saved target_column.json ({target_info['num_classes']} classes)")
+print(f"Saved target_columns.json ({target_info['num_classes']} classes)")
 
 # ────────────────────────────────────
 # Create and Save Scaler

@@ -23,7 +23,7 @@ stages:
       size: 1607
       nfiles: 1
   train:
-    cmd: python3 src/model.py
+    cmd: python src/model.py
     deps:
     - path: artifacts/data
       hash: md5
@@ -32,15 +32,23 @@ stages:
       nfiles: 6
     - path: src/model.py
       hash: md5
-      md5: 87c1c8c2470b439273fa458d8ba9bbaa
-      size: 7375
+      md5: 3df95d1896f3b9cb884a74f2c5830a70
+      size: 8335
     outs:
+    - path: artifacts/feature_columns.json
+      hash: md5
+      md5: 2cfb386eeda99610bbe3184c28eb6e5c
+      size: 411
     - path: artifacts/models/best_model.pkl
       hash: md5
-      md5: 2db01ea986d7ba8307e3036ebcf09aa7
-      size: 8193
+      md5: ff6b47164bccc222112bb3a1cd207511
+      size: 8161
+    - path: artifacts/target_columns.json
+      hash: md5
+      md5: e336488703e11debffc6bf0718327915
+      size: 181
   monitor:
-    cmd: python3 src/monitor.py
+    cmd: python src/monitor.py
     deps:
     - path: artifacts/data
       hash: md5
@@ -49,8 +57,8 @@ stages:
       nfiles: 6
     - path: artifacts/models/best_model.pkl
       hash: md5
-      md5: 2db01ea986d7ba8307e3036ebcf09aa7
-      size: 8193
+      md5: ff6b47164bccc222112bb3a1cd207511
+      size: 8161
     - path: src/monitor.py
       hash: md5
       md5: 8efa01e17d1b097d1bb31875ccba789c
@@ -58,9 +66,9 @@ stages:
     outs:
     - path: artifacts/metrics/monitoring_metrics.json
       hash: md5
-      md5: 8bcc91e1fac7377c19472b9e927aa49e
-      size: 146
+      md5: fa38e96121201be7788b9ddd14481073
+      size: 151
     - path: monitoring/reports/drift_report.json
       hash: md5
-      md5: 577993eb912af4be580a259c4530197f
-      size: 174
+      md5: f86547355ff21e4a0b15705a0b847c0a
+      size: 180
