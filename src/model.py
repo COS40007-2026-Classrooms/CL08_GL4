@@ -57,7 +57,7 @@ with open("artifacts/target_columns.json", "w") as f:
 print(f"Saved target_columns.json ({target_info['num_classes']} classes)")
 
 # ────────────────────────────────────
-# Create and Save Scaler
+# Create and Save Scalers
 # ────────────────────────────────────
 print("\nCreating StandardScaler...")
 scaler = StandardScaler()
