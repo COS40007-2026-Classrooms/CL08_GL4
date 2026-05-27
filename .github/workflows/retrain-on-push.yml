@@ -103,7 +103,7 @@ jobs:
           processed_folder = 'data/processed'
 
           if os.path.exists(old_data_path) and os.path.exists(new_data_path):
-              old_df = pd.read_csv(old_data_path)
+              old_df = pd.read_csv(old_data_path) 
               new_df = pd.read_csv(new_data_path)
 
               print(f'Old dataset rows: {len(old_df)}')
