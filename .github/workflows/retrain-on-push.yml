@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Check out the repository codes
+      # 1. Check out the repository code
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -59,7 +59,6 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install dvc
 
       # 6. Configure DVC remote
       - name: Configure DVC remote
@@ -71,11 +70,7 @@ jobs:
       # 7. Pull latest dataset from DVC
       - name: Pull latest DVC data
         run: |
-          dvc pull -- force --allow-missing || echo "DVC pull completed with warnings"
-
-        # run: |
-        #   dvc pull data/Obesity.csv.dvc --force --allow-missing || echo "DVC pull completed with warnings"
-
+          dvc pull data/Obesity.csv.dvc --force --allow-missing || echo "DVC pull completed with warnings"
 
       # 8. Check for new data
       - name: Check for new data
@@ -107,43 +102,36 @@ jobs:
           new_data_path = 'data/new_data.csv'
           processed_folder = 'data/processed'
 
-          # Load existing training data
-          if os.path.exists(old_data_path):
-
-              train_df = pd.read_csv(old_data_path)
-              print(f'Original training data: {len(train_df)} rows')
-
-              # Load new data
+          if os.path.exists(old_data_path) and os.path.exists(new_data_path):
+              old_df = pd.read_csv(old_data_path) 
               new_df = pd.read_csv(new_data_path)
-              print(f'New data: {len(new_df)} rows')
 
-              # Combine
-              combined_df = pd.concat([train_df, new_df], ignore_index=True)
+              print(f'Old dataset rows: {len(old_df)}')
+              print(f'New dataset rows: {len(new_df)}')
 
+              combined_df = pd.concat([old_df, new_df], ignore_index=True)
               combined_df = combined_df.drop_duplicates()
               combined_df = combined_df.dropna()
 
-              print(f'Combined data: {len(combined_df)} rows')
+              print(f'Combined dataset rows after cleaning: {len(combined_df)}')
 
-              # Save combined data
               combined_df.to_csv(old_data_path, index=False)
-              print(f'Combined data saved to {old_data_path}')
+              print('Updated dataset saved to data/Obesity.csv')
 
-              # Move new data to processed folder
               os.makedirs(processed_folder, exist_ok=True)
-
               timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+              shutil.move(new_data_path, f'{processed_folder}/new_data_{timestamp}.csv')
 
-              shutil.move(
-                  new_data_path,
-                  f'{processed_folder}/new_data_{timestamp}.csv'
-              )
-
-              print(f'New data moved to {processed_folder}/new_data_{timestamp}.csv')
-
+              print('New data moved to processed folder.')
           else:
-              print(f'{old_data_path} not found.')
+              print('Old dataset or new data file not found.')
           "
+
+      # 10. Run monitoring before retraining
+      - name: Run monitoring before retraining
+        run: |
+          echo "Running monitoring before retraining..."
+          python src/monitor.py || echo "Monitoring completed with warnings"
 
       # 11. Preprocess new data
       - name: Preprocess new data
@@ -151,13 +139,6 @@ jobs:
         run: |
           echo "New data detected. Starting preprocessing..."
           python src/preprocess_new_data.py
-
-
-      # 10. Run monitoring before retraining
-      - name: Run monitoring before retraining
-        run: |
-          echo "Running monitoring before retraining..."
-          python src/monitor.py || echo "Monitoring completed with warnings"
 
       # 12. Check generated files after preprocessing
       - name: Check artifacts after preprocessing
