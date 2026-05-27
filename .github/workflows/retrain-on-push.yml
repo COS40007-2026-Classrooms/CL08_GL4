@@ -104,29 +104,42 @@ jobs:
           new_data_path = 'data/new_data.csv'
           processed_folder = 'data/processed'
 
-          if os.path.exists(old_data_path) and os.path.exists(new_data_path):
-              old_df = pd.read_csv(old_data_path) 
+          # Load existing training data
+          if os.path.exists(old_data_path):
+
+              train_df = pd.read_csv(old_data_path)
+              print(f'Original training data: {len(train_df)} rows')
+
+              # Load new data
               new_df = pd.read_csv(new_data_path)
+              print(f'New data: {len(new_df)} rows')
 
-              print(f'Old dataset rows: {len(old_df)}')
-              print(f'New dataset rows: {len(new_df)}')
+              # Combine
+              combined_df = pd.concat([train_df, new_df], ignore_index=True)
 
-              combined_df = pd.concat([old_df, new_df], ignore_index=True)
               combined_df = combined_df.drop_duplicates()
               combined_df = combined_df.dropna()
 
-              print(f'Combined dataset rows after cleaning: {len(combined_df)}')
+              print(f'Combined data: {len(combined_df)} rows')
 
+              # Save combined data
               combined_df.to_csv(old_data_path, index=False)
-              print('Updated dataset saved to data/Obesity.csv')
+              print(f'Combined data saved to {old_data_path}')
 
+              # Move new data to processed folder
               os.makedirs(processed_folder, exist_ok=True)
-              timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-              shutil.move(new_data_path, f'{processed_folder}/new_data_{timestamp}.csv')
 
-              print('New data moved to processed folder.')
+              timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+
+              shutil.move(
+                  new_data_path,
+                  f'{processed_folder}/new_data_{timestamp}.csv'
+              )
+
+              print(f'New data moved to {processed_folder}/new_data_{timestamp}.csv')
+
           else:
-              print('Old dataset or new data file not found.')
+              print(f'{old_data_path} not found.')
           "
 
       # 10. Run monitoring before retraining
