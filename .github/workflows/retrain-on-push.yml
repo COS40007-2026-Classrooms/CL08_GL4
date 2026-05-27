@@ -68,10 +68,16 @@ jobs:
           dvc remote modify origin --local user "${{ secrets.DAGSHUB_USERNAME }}"
           dvc remote modify origin --local password "${{ secrets.DAGSHUB_TOKEN }}"
 
+      # # 7. Pull latest dataset from DVC
+      # - name: Pull latest DVC data
+      #   run: |
+      #     dvc pull data/Obesity.csv.dvc --force --allow-missing || echo "DVC pull completed with warnings"
+
+
       # 7. Pull latest dataset from DVC
       - name: Pull latest DVC data
         run: |
-          dvc pull data/Obesity.csv.dvc --force --allow-missing || echo "DVC pull completed with warnings"
+          dvc pull --force --allow-missing || echo "DVC pull completed with warnings"
 
 
       # 8. Check for new data
