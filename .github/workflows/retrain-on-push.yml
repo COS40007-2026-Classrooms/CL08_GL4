@@ -72,6 +72,12 @@ jobs:
         run: |
           dvc pull data/Obesity.csv.dvc --force --allow-missing || echo "DVC pull completed with warnings"
 
+
+      - name: Debug current directory
+        run: |
+          pwd
+          ls -R
+
       # 8. Check for new data
       - name: Check for new data
         id: check_data
