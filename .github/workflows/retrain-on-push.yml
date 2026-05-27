@@ -20,26 +20,26 @@ on:
     - cron: "0 0 * * *"
 
 permissions:
-  contents: write
+ contents: write
 
 jobs:
   monitor-and-retrain:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout code
+      # 1. Check out the repository codes
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 2. Setup Python
+      # 2. Set up Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # 3. Cache pip
+      # 3. Cache pip packages
       - name: Cache pip dependencies
         uses: actions/cache@v4
         with:
@@ -48,8 +48,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      # 4. Git config
-      - name: Configure Git
+      # 4. Configure Git user
+      - name: Configure Git User for DVCLive
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
@@ -68,131 +68,162 @@ jobs:
           dvc remote modify origin --local user "${{ secrets.DAGSHUB_USERNAME }}"
           dvc remote modify origin --local password "${{ secrets.DAGSHUB_TOKEN }}"
 
-      # 7. Pull DVC data
+      # 7. Pull latest dataset from DVC
       - name: Pull latest DVC data
         run: |
-          dvc pull --force --allow-missing || echo "DVC pull completed with warnings"
+          dvc pull data/Obesity.csv.dvc --force --allow-missing || echo "DVC pull completed with warnings"
+
 
       # 8. Check for new data
       - name: Check for new data
+        id: check_data
         run: |
           echo "Checking for newly added data..."
 
           if [ -f "data/new_data.csv" ]; then
+            echo "New data detected: data/new_data.csv"
             echo "NEW_DATA=true" >> $GITHUB_ENV
-            echo "New data detected"
           else
+            echo "No new data found."
             echo "NEW_DATA=false" >> $GITHUB_ENV
-            echo "No new data found"
           fi
 
-      # 9. Combine datasets (only if new data exists)
-      - name: Combine datasets
+      # 9. Combine old data with new data
+      - name: Combine old and new data
         if: env.NEW_DATA == 'true'
         run: |
+          echo "Combining old dataset with new data..."
+
           python -c "
           import pandas as pd
           import os
           import shutil
           from datetime import datetime
 
-          old = 'data/Obesity.csv'
-          new = 'data/new_data.csv'
-          processed = 'data/processed'
+          old_data_path = 'data/Obesity.csv'
+          new_data_path = 'data/new_data.csv'
+          processed_folder = 'data/processed'
 
-          if os.path.exists(old) and os.path.exists(new):
-              old_df = pd.read_csv(old)
-              new_df = pd.read_csv(new)
+          if os.path.exists(old_data_path) and os.path.exists(new_data_path):
+              old_df = pd.read_csv(old_data_path) 
+              new_df = pd.read_csv(new_data_path)
 
-              combined = pd.concat([old_df, new_df], ignore_index=True)
-              combined = combined.drop_duplicates().dropna()
+              print(f'Old dataset rows: {len(old_df)}')
+              print(f'New dataset rows: {len(new_df)}')
 
-              combined.to_csv(old, index=False)
+              combined_df = pd.concat([old_df, new_df], ignore_index=True)
+              combined_df = combined_df.drop_duplicates()
+              combined_df = combined_df.dropna()
 
-              os.makedirs(processed, exist_ok=True)
-              ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-              shutil.move(new, f'{processed}/new_data_{ts}.csv')
+              print(f'Combined dataset rows after cleaning: {len(combined_df)}')
 
-              print('Data merged successfully')
+              combined_df.to_csv(old_data_path, index=False)
+              print('Updated dataset saved to data/Obesity.csv')
+
+              os.makedirs(processed_folder, exist_ok=True)
+              timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+              shutil.move(new_data_path, f'{processed_folder}/new_data_{timestamp}.csv')
+
+              print('New data moved to processed folder.')
           else:
-              print('Missing data files')
+              print('Old dataset or new data file not found.')
           "
 
-      # 10. PREPROCESS (IMPORTANT FIX 🔴)
-      - name: Preprocess data (generate artifacts)
-        run: |
-          echo "Running preprocessing..."
-          python src/preprocess.py
-
-      # 11. RUN MONITORING BEFORE TRAINING (NOW SAFE)
+      # 10. Run monitoring before retraining
       - name: Run monitoring before retraining
         run: |
           echo "Running monitoring before retraining..."
-          python src/monitor.py || echo "Monitoring warnings only"
+          python src/monitor.py || echo "Monitoring completed with warnings"
 
-      # 12. Train model (only if new data exists)
+      # 11. Preprocess new data
+      - name: Preprocess new data
+        if: env.NEW_DATA == 'true'
+        run: |
+          echo "New data detected. Starting preprocessing..."
+          python src/preprocess_new_data.py
+
+      # 12. Check generated files after preprocessing
+      - name: Check artifacts after preprocessing
+        if: env.NEW_DATA == 'true'
+        run: |
+          echo "Checking artifacts/data folder..."
+          ls -la artifacts/data || echo "artifacts/data folder not found"
+
+      # 13. Retrain the model
       - name: Retrain model
         if: env.NEW_DATA == 'true'
         run: |
           echo "=========================================="
-          echo "RETRAINING MODEL"
+          echo "RETRAINING MODEL BECAUSE NEW DATA EXISTS"
           echo "=========================================="
           python src/model.py
 
-      # 13. Post-training monitoring
+      # 14. Run monitoring after retraining
       - name: Run monitoring after retraining
         if: env.NEW_DATA == 'true'
         run: |
-          echo "Running post-training monitoring..."
+          echo "Running monitoring after retraining..."
           python src/monitor.py
 
-      # 14. Save metadata
-      - name: Save metadata
+      # 15. Save retraining metadata
+      - name: Save retraining metadata
         if: env.NEW_DATA == 'true'
         run: |
           mkdir -p artifacts/metadata
-          echo "Last retraining: $(date)" > artifacts/metadata/last_retrain.txt
-          echo "Data source: data/new_data.csv" >> artifacts/metadata/last_retrain.txt
+          echo "Last retraining date: $(date)" > artifacts/metadata/last_retrain.txt
+          echo "New data used: data/new_data.csv" >> artifacts/metadata/last_retrain.txt
 
-      # 15. Push to DVC
-      - name: Push to DVC
+      # 16. Push updated model and artifacts to DVC
+      - name: Push new model and artifacts to DVC
         if: env.NEW_DATA == 'true'
         run: |
+          echo "Pushing updated model and artifacts to DVC..."
           dvc push || echo "DVC push completed with warnings"
 
-      # 16. Commit changes
-      - name: Commit updates
+      # 17. Commit updated files back to GitHub
+      - name: Commit and push updated files
         if: env.NEW_DATA == 'true'
         run: |
-          git add data/Obesity.csv data/processed/ artifacts/ metadata/ models/ || true
+          echo "Committing updated files to GitHub..."
+
+          git add data/Obesity.csv data/processed/ artifacts/metadata/ || true
+          git add artifacts/ models/ monitoring/reports/ || true
+          git add *.dvc dvc.lock || true
 
           if git diff --staged --quiet; then
-            echo "No changes"
+            echo "No changes to commit."
           else
-            git commit -m "Auto-retrain pipeline update"
+            git commit -m "Auto-retrain: model updated with new data"
             git push
           fi
 
-      # 17. Upload artifacts
-      - name: Upload artifacts
+      # 18. Upload results as GitHub Actions artifacts
+      - name: Upload retraining reports
         uses: actions/upload-artifact@v4
         with:
-          name: ml-results-${{ github.run_id }}
+          name: retraining-results-${{ github.run_id }}
           path: |
-            artifacts/
+            artifacts/models/
+            artifacts/metrics/
+            artifacts/preprocessing/
+            artifacts/data/
+            artifacts/metadata/
             monitoring/reports/
-            models/
+            artifacts/model_comparison.png
           retention-days: 7
 
-      # 18. Final message
-      - name: Pipeline complete
+      # 19. Final workflow message
+      - name: Send notification
         run: |
           echo "=========================================="
-          echo "PIPELINE COMPLETED"
+          echo "AUTO RETRAINING WORKFLOW COMPLETED"
           echo "=========================================="
 
           if [ "${{ env.NEW_DATA }}" = "true" ]; then
-            echo "New data detected → retraining executed"
+            echo "New data was detected."
+            echo "Old and new data were combined."
+            echo "Preprocessing, retraining, and monitoring were completed."
           else
-            echo "No new data → only preprocessing + monitoring ran"
+            echo "No new data was detected."
+            echo "Only monitoring/checking was performed."
           fi
