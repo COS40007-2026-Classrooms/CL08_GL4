@@ -68,16 +68,23 @@ jobs:
           dvc remote modify origin --local user "${{ secrets.DAGSHUB_USERNAME }}"
           dvc remote modify origin --local password "${{ secrets.DAGSHUB_TOKEN }}"
 
-      # 7. Pull latest dataset from DVC
-      - name: Pull latest DVC data
-        run: |
-          dvc pull data/Obesity.csv.dvc --force --allow-missing || echo "DVC pull completed with warnings"
-
-
-      # - name: Debug current directory
+      # # 7. Pull latest dataset from DVC
+      # - name: Pull latest DVC data
       #   run: |
-      #     pwd
-      #     ls -R
+      #     dvc pull data/Obesity.csv.dvc --force --allow-missing || echo "DVC pull completed with warnings"
+
+      - name: Pull all DVC data
+        run: |
+          dvc pull --verbose || true
+          ls -l data
+
+
+      # filepath: .github/workflows/retrain-on-push.yml
+
+      - name: List data directory before combining
+        run: |
+          echo "Listing data directory:"
+          ls -l data
 
       # # 8. Pull dataset from DVC (FIXED)
       # - name: Pull DVC data
