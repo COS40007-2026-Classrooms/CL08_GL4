@@ -59,6 +59,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
+          pip install dvc
 
       # 6. Configure DVC remote
       - name: Configure DVC remote
@@ -67,16 +68,29 @@ jobs:
           dvc remote modify origin --local user "${{ secrets.DAGSHUB_USERNAME }}"
           dvc remote modify origin --local password "${{ secrets.DAGSHUB_TOKEN }}"
 
+
+      # BEFORE pulling DVC data
+      - name: Setup DVC
+        run: |
+          dvc init --no-scm
+
       # 7. Pull latest dataset from DVC
       - name: Pull latest DVC data
         run: |
           dvc pull data/Obesity.csv.dvc --force --allow-missing || echo "DVC pull completed with warnings"
 
 
-      - name: Debug current directory
+      # - name: Debug current directory
+      #   run: |
+      #     pwd
+      #     ls -R
+
+      # 8. Pull dataset from DVC (FIXED)
+      - name: Pull DVC data
         run: |
-          pwd
-          ls -R
+          dvc pull --verbose || true
+          ls -R data
+          echo 'DVC pull complete'
 
       # 8. Check for new data
       - name: Check for new data
