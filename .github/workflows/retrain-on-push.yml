@@ -79,12 +79,12 @@ jobs:
       #     pwd
       #     ls -R
 
-      # 8. Pull dataset from DVC (FIXED)
-      - name: Pull DVC data
-        run: |
-          dvc pull --verbose || true
-          ls -R data
-          echo 'DVC pull complete'
+      # # 8. Pull dataset from DVC (FIXED)
+      # - name: Pull DVC data
+      #   run: |
+      #     dvc pull --verbose || true
+      #     ls -R data
+      #     echo 'DVC pull complete'
 
       # 8. Check for new data
       - name: Check for new data
