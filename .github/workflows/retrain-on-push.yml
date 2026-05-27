@@ -145,18 +145,19 @@ jobs:
               print(f'{old_data_path} not found.')
           "
 
-      # 10. Run monitoring before retraining
-      - name: Run monitoring before retraining
-        run: |
-          echo "Running monitoring before retraining..."
-          python src/monitor.py || echo "Monitoring completed with warnings"
-
       # 11. Preprocess new data
       - name: Preprocess new data
         if: env.NEW_DATA == 'true'
         run: |
           echo "New data detected. Starting preprocessing..."
           python src/preprocess_new_data.py
+
+
+      # 10. Run monitoring before retraining
+      - name: Run monitoring before retraining
+        run: |
+          echo "Running monitoring before retraining..."
+          python src/monitor.py || echo "Monitoring completed with warnings"
 
       # 12. Check generated files after preprocessing
       - name: Check artifacts after preprocessing
