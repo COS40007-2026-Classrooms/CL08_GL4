@@ -113,9 +113,45 @@ def pre_processing():
     # 7. Scale
     # -----------------------------
     scaler = StandardScaler()
+    from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
 
-    X_train = scaler.fit_transform(X_train)
-    X_test = scaler.transform(X_test)
+    # Columns grouped
+    standard_cols = ['Height', 'Weight', 'CH2O', 'FAF']
+    minmax_cols = ['Age', 'FCVC', 'TUE']
+    robust_cols = ['NCP']
+
+    # Apply scaling, Standard scaler Makes data centred, Minmaxscaler shrinks data to 0-1 when there is skewedness and Robustscaler Scales data based on
+    #Middle values and ignore outliers
+    df[standard_cols] = StandardScaler().fit_transform(df[standard_cols])
+    df[minmax_cols] = MinMaxScaler().fit_transform(df[minmax_cols])
+    df[robust_cols] = RobustScaler().fit_transform(df[robust_cols])
+
+    #Ordinal encoding For hericachical categories
+    df['CAEC'] = df['CAEC'].map({
+        'no': 0,
+        'Sometimes': 1,
+        'Frequently': 2,
+        'Always': 3
+    })
+
+    df['CALC'] = df['CALC'].map({
+        'no': 0,
+        'Sometimes': 1,
+        'Frequently': 2
+    })
+
+    #Binary encoding for only 2 values
+
+    binary_cols = ['Gender', 'family_history_with_overweight', 'FAVC', 'SMOKE', 'SCC']
+
+    for col in binary_cols:
+        df[col] = df[col].map({
+            'yes': 1, 'no': 0,
+            'Male': 1, 'Female': 0
+        })
+
+    #Nominal Encoding For no order
+    df = pd.get_dummies(df, columns=['MTRANS'])
 
     # -----------------------------
     # 8. Save
