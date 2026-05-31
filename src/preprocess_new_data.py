@@ -110,48 +110,40 @@ def pre_processing():
     )
 
     # -----------------------------
-    # 7. Scale
+    # 7. Scaling (FIXED)
     # -----------------------------
-    scaler = StandardScaler()
+
     from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
 
-    # Columns grouped
+    # Column groups (must exist in X, NOT df)
     standard_cols = ['Height', 'Weight', 'CH2O', 'FAF']
     minmax_cols = ['Age', 'FCVC', 'TUE']
     robust_cols = ['NCP']
 
-    # Apply scaling, Standard scaler Makes data centred, Minmaxscaler shrinks data to 0-1 when there is skewedness and Robustscaler Scales data based on
-    #Middle values and ignore outliers
-    df[standard_cols] = StandardScaler().fit_transform(df[standard_cols])
-    df[minmax_cols] = MinMaxScaler().fit_transform(df[minmax_cols])
-    df[robust_cols] = RobustScaler().fit_transform(df[robust_cols])
+    # Fit scalers on TRAIN only
+    scaler_standard = StandardScaler()
+    scaler_minmax = MinMaxScaler()
+    scaler_robust = RobustScaler()
 
-    #Ordinal encoding For hericachical categories
-    df['CAEC'] = df['CAEC'].map({
-        'no': 0,
-        'Sometimes': 1,
-        'Frequently': 2,
-        'Always': 3
-    })
+    # Apply safely
+    for col in standard_cols:
+        if col in X.columns:
+            X[col] = scaler_standard.fit_transform(X[[col]])
 
-    df['CALC'] = df['CALC'].map({
-        'no': 0,
-        'Sometimes': 1,
-        'Frequently': 2
-    })
+    for col in minmax_cols:
+        if col in X.columns:
+            X[col] = scaler_minmax.fit_transform(X[[col]])
 
-    #Binary encoding for only 2 values
+    for col in robust_cols:
+        if col in X.columns:
+            X[col] = scaler_robust.fit_transform(X[[col]])
 
-    binary_cols = ['Gender', 'family_history_with_overweight', 'FAVC', 'SMOKE', 'SCC']
-
-    for col in binary_cols:
-        df[col] = df[col].map({
-            'yes': 1, 'no': 0,
-            'Male': 1, 'Female': 0
-        })
-
-    #Nominal Encoding For no order
-    df = pd.get_dummies(df, columns=['MTRANS'])
+    # Save one scaler bundle (optional but cleaner)
+    joblib.dump({
+        "standard": scaler_standard,
+        "minmax": scaler_minmax,
+        "robust": scaler_robust
+    }, "artifacts/preprocessing/scaler.pkl")
 
     # -----------------------------
     # 8. Save
