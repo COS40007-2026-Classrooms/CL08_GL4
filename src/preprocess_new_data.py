@@ -107,7 +107,6 @@ def pre_processing():
         y,
         test_size=0.2,
         random_state=42,
-        stratify=y
     )
 
     # -----------------------------
