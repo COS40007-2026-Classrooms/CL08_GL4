@@ -98,7 +98,6 @@ jobs:
           import shutil
           from datetime import datetime
 
-          old_data_path = 'data/Obesity.csv'
           new_data_path = 'data/new_data.csv'
           processed_folder = 'data/processed'
 
