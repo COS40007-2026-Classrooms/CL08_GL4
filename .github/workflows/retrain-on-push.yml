@@ -123,8 +123,12 @@ jobs:
               shutil.move(new_data_path, f'{processed_folder}/new_data_{timestamp}.csv')
 
               print('New data moved to processed folder.')
+          if not os.path.exists(new_data_path):
+              print('New data file not found. Skipping combination.')
+            
           else:
-              print('Old dataset or new data file not found.')
+              print('Old data file not found. Skipping combination.')
+              
           "
 
       # 10. Run monitoring before retraining
