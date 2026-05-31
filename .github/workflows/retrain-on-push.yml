@@ -102,7 +102,7 @@ jobs:
           new_data_path = 'data/new_data.csv'
           processed_folder = 'data/processed'
 
-          if os.path.exists(old_data_path) and os.path.exists(new_data_path):
+          if os.path.exists(new_data_path):
               old_df = pd.read_csv(old_data_path) 
               new_df = pd.read_csv(new_data_path)
 
