@@ -29,12 +29,8 @@ def load_feature_columns():
 
 def pre_processing():
 
-    # -----------------------------
-    # 1. Pull data
-    # -----------------------------
-    os.system("dvc pull")
 
-    path = "data/Obesity.csv"
+    path = "data/new_data.csv"
 
     if not os.path.exists(path):
         print("Dataset not found!")
