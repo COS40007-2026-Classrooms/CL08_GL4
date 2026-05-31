@@ -156,7 +156,6 @@ def pre_processing():
     np.save("artifacts/data/y_train.npy", y_train)
     np.save("artifacts/data/y_test.npy", y_test)
 
-    joblib.dump(scaler, "artifacts/preprocessing/scaler.pkl")
 
     print("Done preprocessing!")
     return True
