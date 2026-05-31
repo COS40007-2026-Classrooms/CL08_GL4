@@ -14,8 +14,8 @@ stages:
     - src/model.py
     outs:
     - artifacts/models/best_model.pkl
-    - artifacts/feature_columns.json
-    - artifacts/target_column.json
+    - artifacts/preprocessing/feature_columns.json
+    - artifacts/preprocessing/target_column.json
   monitor:
     cmd: python src/monitor.py
     deps:
